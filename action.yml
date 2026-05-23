@@ -1,0 +1,13 @@
+name: "Log Anomaly Detection"
+inputs:
+    github-token:
+        required: true
+    job-name:
+        required: true
+
+runs:
+    using: "composite"
+    steps:
+        - name: Fetch logs
+          shell: bash
+          run: python fetch_logs.py -t ${{inputs.github-token}} -j ${{inputs.job-name}}
