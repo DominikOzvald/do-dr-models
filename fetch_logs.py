@@ -18,19 +18,11 @@ def fetch_log(token: str, job_name: str, repo: str, run_id: str):
         for job in jobs:
             if job["name"] == job_name:
                 job_id = job["id"]
+            print(f"job_id {job_id}")
         if job_id:
             url = f"https://api.github.com/repos/{repo}/actions/jobs/{job_id}/logs"
             response = requests.get(url, headers=headers)
-            with open("tmp.txt", "wb") as f:
-                f.write(response.content)
-            with open("tmp.txt", "r", encoding="utf-8") as f:
-                i = 0
-                for line in f:
-                    print(line, end="")
-                    if i > 9:
-                        break
-                    i += 1
-
+            print(f"response status {response.status_code}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
