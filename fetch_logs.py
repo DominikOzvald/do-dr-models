@@ -13,7 +13,7 @@ def fetch_log(token: str, job_name: str, repo: str, run_id: str):
     response = requests.get(url, headers=headers)
 
     if response.status_code == 200:
-        jobs = response.json["jobs"]
+        jobs = response.json()["jobs"]
         job_id = None
         for job in jobs:
             if job["name"] == job_name:
