@@ -17,7 +17,7 @@ if __name__ == "__main__":
     if not action_path:
         print("No action path found")
         exit(1)
-
+    device = "cuda" if torch.cuda.is_available() else "cpu"
     autoencoder_name = "ConvLSTM-E-32-H-196-L-128.pt"
     char_vocab = CharVocab()
     embed_size = 32
@@ -42,7 +42,7 @@ if __name__ == "__main__":
 
     try:
         embedder.conv_lstm.load_state_dict(
-            torch.load(os.path.join(action_path, autoencoder_name), weights_only=True)
+            torch.load(os.path.join(action_path, autoencoder_name), weights_only=True,map_location=torch.device(device))
         )
     except Exception as e:
         print("Can not load ConvLstmEncoder", autoencoder_name)
@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
     try:
         model.load_state_dict(
-            torch.load(os.path.join(action_path, transformer_name), weights_only=True)
+            torch.load(os.path.join(action_path, transformer_name), weights_only=True,map_location=torch.device(device))
         )
     except Exception as e:
         print("Can not load Transformer", transformer_name)
