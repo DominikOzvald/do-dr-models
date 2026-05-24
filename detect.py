@@ -13,7 +13,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     job_name = args.job
-    action_path = argparse.path
+    action_path = args.path
     if not action_path:
         print("No action path found")
         exit(1)
