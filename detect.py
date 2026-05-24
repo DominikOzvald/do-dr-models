@@ -40,8 +40,9 @@ if __name__ == "__main__":
         embedder.conv_lstm.load_state_dict(
             torch.load(os.path.join(action_path, autoencoder_name), weights_only=True)
         )
-    except:
+    except Exception as e:
         print("Can not load ConvLstmEncoder", autoencoder_name)
+        print(e)
         exit(-1)
 
     enc_layer = 2
@@ -61,8 +62,9 @@ if __name__ == "__main__":
         model.load_state_dict(
             torch.load(os.path.join(action_path, transformer_name), weights_only=True)
         )
-    except:
+    except Exception as e:
         print("Can not load Transformer", transformer_name)
+        print(e)
         exit(-1)
 
     model.eval()
