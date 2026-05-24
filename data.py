@@ -124,3 +124,7 @@ class DummyLogDataSet(Dataset):
                 mask = torch.zeros(frame_len)
             tags = tags.to(torch.long)
         return frame, lengths, mask, tags
+    
+    def get_str_log_item(self,item):
+        logs, tags = zip(*self.data[item])
+        return logs

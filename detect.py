@@ -79,6 +79,8 @@ if __name__ == "__main__":
     dataset.add_from_file(f"{job_name}.txt")
     data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
 
+    tag_names = ["Flaky test","Configuration drift","Security anomaly","Silent failure"]
+
     for i, (data, lengths, masks, tags) in enumerate(data_loader):
         with torch.no_grad():
             z = embedder(data, lengths)
@@ -87,5 +89,7 @@ if __name__ == "__main__":
             prediction = prediction.view(-1)
             tags = tags.view(-1)
             prediction = prediction[tags != dataset.pad_tag]
-            num_anomalies = torch.sum(prediction > 0).item()
-            print(f"Line {i*step}-{i*step+frame_size}: {num_anomalies} anomalies")
+            log_str = dataset.get_str_log_item(i)
+            for j in range(len(log_str)):
+                if prediction[i]>0:
+                    print(f"Anomaly detected: {tag_names[prediction[j]-1]}, Line: {log_str[j]}")
