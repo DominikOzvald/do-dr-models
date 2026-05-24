@@ -12,6 +12,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     job_name = args.job
+    action_path = os.environ.get("ACTION_PATH")
 
     autoencoder_name = "ConvLSTM-E-32-H-196-L-128.pt"
     char_vocab = CharVocab()
@@ -37,7 +38,7 @@ if __name__ == "__main__":
 
     try:
         embedder.conv_lstm.load_state_dict(
-            torch.load(autoencoder_name, weights_only=True)
+            torch.load(os.path.join(action_path, autoencoder_name), weights_only=True)
         )
     except:
         print("Can not load ConvLstmEncoder", autoencoder_name)
@@ -57,7 +58,9 @@ if __name__ == "__main__":
     )
 
     try:
-        model.load_state_dict(torch.load(transformer_name, weights_only=True))
+        model.load_state_dict(
+            torch.load(os.path.join(action_path, transformer_name), weights_only=True)
+        )
     except:
         print("Can not load Transformer", transformer_name)
         exit(-1)
