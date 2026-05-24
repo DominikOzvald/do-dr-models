@@ -91,5 +91,5 @@ if __name__ == "__main__":
             prediction = prediction[tags != dataset.pad_tag]
             log_str = dataset.get_str_log_item(i)
             for j in range(len(log_str)):
-                if prediction[i]>0:
+                if prediction[j]>0:
                     print(f"Anomaly detected: {tag_names[prediction[j]-1]}, Line: {log_str[j]}")
