@@ -13,6 +13,9 @@ if __name__ == "__main__":
 
     job_name = args.job
     action_path = os.environ.get("ACTION_PATH")
+    if not action_path:
+        print("No action path found")
+        exit(1)
 
     autoencoder_name = "ConvLSTM-E-32-H-196-L-128.pt"
     char_vocab = CharVocab()

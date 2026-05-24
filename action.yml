@@ -1,4 +1,5 @@
 name: "Log Anomaly Detection"
+description: ""
 inputs:
     github-token:
         required: true
