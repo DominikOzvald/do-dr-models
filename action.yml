@@ -11,3 +11,6 @@ runs:
         - name: Fetch logs
           shell: bash
           run: python ${{ github.action_path }}/fetch_logs.py -t ${{inputs.github-token}} -j ${{inputs.job-name}}
+        - name: Install dependencies
+          shell: bash
+          run: pip install torch scikit-learn
