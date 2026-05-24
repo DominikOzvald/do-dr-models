@@ -1,0 +1,82 @@
+import argparse
+import os
+from data import CharVocab, DummyLogDataSet
+from models import ConvEmbedder, TaggedTransformer
+import torch
+from torch.utils.data import DataLoader
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-j", "--job", required=True, type=str)
+    args = parser.parse_args()
+
+    job_name = args.job
+
+    autoencoder_name = "ConvLSTM-E-32-H-196-L-128.pt"
+    char_vocab = CharVocab()
+    embed_size = 32
+    hidden_size_enc = 196
+    hidden_size_dec = 384
+    latent_size = 128
+    vocab_size = len(char_vocab)
+    use_embed_matrix = True
+    max_in_len = 200
+    letter_chunk = 4
+
+    embedder = ConvEmbedder(
+        embed_size=embed_size,
+        hidden_size_enc=hidden_size_enc,
+        hidden_size_dec=hidden_size_dec,
+        latent_size=latent_size,
+        letter_chunk=letter_chunk,
+        max_in_len=max_in_len,
+        use_embed_matrix=use_embed_matrix,
+        vocab_size=vocab_size,
+    )
+
+    try:
+        embedder.conv_lstm.load_state_dict(
+            torch.load(autoencoder_name, weights_only=True)
+        )
+    except:
+        print("Can not load ConvLstmEncoder", autoencoder_name)
+        exit(-1)
+
+    enc_layer = 2
+    n_head = 2
+    dim_forward = 1024
+    d_model = 128
+    transformer_name = "TaggedTransformer-E-2-H-2-F-1024-D-128.pt"
+    model = TaggedTransformer(
+        d_model=d_model,
+        dim_forward=dim_forward,
+        n_head=n_head,
+        num_layers=enc_layer,
+        num_class=5,
+    )
+
+    try:
+        model.load_state_dict(torch.load(transformer_name, weights_only=True))
+    except:
+        print("Can not load Transformer", transformer_name)
+        exit(-1)
+
+    model.eval()
+    step = 66
+    frame_size = 66
+    batch_size = 1
+    dataset = DummyLogDataSet(step=step, frame_size=frame_size, pad_tag=6)
+    dataset.add_from_file(f"{job_name}.txt")
+    data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
+
+    for i, (data, lengths, masks, tags) in enumerate(data_loader):
+        with torch.no_grad():
+            z = embedder(data, lengths)
+            out = model(z, masks)
+            prediction = torch.argmax(torch.softmax(out, dim=-1), dim=-1)
+            prediction = prediction.view(-1)
+            tags = tags.view(-1)
+            prediction = prediction[tags != dataset.pad_tag]
+            num_anomalies = torch.sum(prediction > 0).item()
+            print(f"Line {i*step}-{i*step+frame_size}: {num_anomalies} anomalies")
