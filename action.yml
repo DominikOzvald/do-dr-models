@@ -14,3 +14,6 @@ runs:
         - name: Install dependencies
           shell: bash
           run: pip install torch scikit-learn
+        - name: Detection
+          shell: bash
+          run: python ${{ github.action_path }}/detect.py -j ${{inputs.job-name}}
