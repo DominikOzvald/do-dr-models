@@ -9,10 +9,11 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-j", "--job", required=True, type=str)
+    parser.add_argument("-p","--path",required=True,type=str)
     args = parser.parse_args()
 
     job_name = args.job
-    action_path = os.environ.get("ACTION_PATH")
+    action_path = argparse.path
     if not action_path:
         print("No action path found")
         exit(1)

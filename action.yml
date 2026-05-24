@@ -17,5 +17,4 @@ runs:
           run: pip install torch scikit-learn
         - name: Detection
           shell: bash
-          env: ACTION_PATH = ${{ github.action_path }}
-          run: python ${{ github.action_path }}/detect.py -j ${{inputs.job-name}}
+          run: python ${{ github.action_path }}/detect.py -j ${{inputs.job-name}} -p ${{ github.action_path }}
