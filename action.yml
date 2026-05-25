@@ -5,6 +5,8 @@ inputs:
         required: true
     job-name:
         required: true
+    mail-address:
+        required: true
 
 runs:
     using: "composite"
@@ -17,4 +19,27 @@ runs:
           run: pip install torch scikit-learn
         - name: Detection
           shell: bash
-          run: python ${{ github.action_path }}/detect.py -j ${{inputs.job-name}} -p ${{ github.action_path }}
+          id: detector
+          run: |
+              python ${{ github.action_path }}/detect.py -j ${{inputs.job-name}} -p ${{ github.action_path }} > anomaly.txt
+
+              if [-s anomaly.txt]; then
+                echo "detection=true" >> $GITHUB_OUTPUT
+              else
+                echo "detection=false" >> $GITHUB_OUTPUT
+              fi
+        - name: Send mail notification
+          if: steps:detector.outputs.detected == 'true'
+          uses: dawidd6/action-send-mail@v3
+          with:
+              server_address: smtp.gmail.com
+              server_port: 465
+              secure: true
+
+              username: ${{ secrets.MAIL_USERNAME }}
+              password: ${{ secrets.MAIL_PASSWORD }}
+              to: ${{ inputs.mail-address}}
+              subject: "Anomaly detection alert"
+              from: GitHub Log Bot <${{ secrets.MAIL_USERNAME }}>
+              body: "The anomaly detection job found issues in the latest log files. See attached."
+              attachments: anomalies.txt
