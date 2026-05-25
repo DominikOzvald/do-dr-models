@@ -30,7 +30,6 @@ runs:
               python ${{ github.action_path }}/detect.py -j ${{inputs.job-name}} -p ${{ github.action_path }} > anomaly.txt
               echo "detection=true" >> $GITHUB_OUTPUT
         - name: Send mail notification
-          if: steps.detector.outputs.detected == 'true'
           uses: dawidd6/action-send-mail@v3
           with:
               server_address: ${{inputs.server-address}}
