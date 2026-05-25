@@ -7,6 +7,12 @@ inputs:
         required: true
     mail-address:
         required: true
+    server-address:
+        required: true
+    mail-username:
+        required: true
+    mail-password:
+        required: true
 
 runs:
     using: "composite"
@@ -29,17 +35,17 @@ runs:
                 echo "detection=false" >> $GITHUB_OUTPUT
               fi
         - name: Send mail notification
-          if: steps:detector.outputs.detected == 'true'
+          if: steps.detector.outputs.detected == 'true'
           uses: dawidd6/action-send-mail@v3
           with:
-              server_address: smtp.gmail.com
+              server_address: ${{inputs.server-address}}
               server_port: 465
               secure: true
 
-              username: ${{ secrets.MAIL_USERNAME }}
-              password: ${{ secrets.MAIL_PASSWORD }}
+              username: ${{ inputs.mail-username }}
+              password: ${{ inputs.mail-password }}
               to: ${{ inputs.mail-address}}
               subject: "Anomaly detection alert"
-              from: GitHub Log Bot <${{ secrets.MAIL_USERNAME }}>
+              from: GitHub Log Bot <${{ inputs.mail-username }}>
               body: "The anomaly detection job found issues in the latest log files. See attached."
               attachments: anomalies.txt
