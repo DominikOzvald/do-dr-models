@@ -28,12 +28,7 @@ runs:
           id: detector
           run: |
               python ${{ github.action_path }}/detect.py -j ${{inputs.job-name}} -p ${{ github.action_path }} > anomaly.txt
-
-              if [cat anomaly.txt]; then
-                echo "detection=true" >> $GITHUB_OUTPUT
-              else
-                echo "detection=false" >> $GITHUB_OUTPUT
-              fi
+              echo "detection=true" >> $GITHUB_OUTPUT
         - name: Send mail notification
           if: steps.detector.outputs.detected == 'true'
           uses: dawidd6/action-send-mail@v3
