@@ -42,4 +42,4 @@ runs:
               subject: "Anomaly detection alert"
               from: GitHub Log Bot <${{ inputs.mail-username }}>
               body: "The anomaly detection job found issues in the latest log files. See attached."
-              attachments: anomalies.txt
+              attachments: anomaly.txt
