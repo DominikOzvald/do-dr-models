@@ -29,7 +29,7 @@ runs:
           run: |
               python ${{ github.action_path }}/detect.py -j ${{inputs.job-name}} -p ${{ github.action_path }} > anomaly.txt
 
-              if [anomaly.txt]; then
+              if [cat anomaly.txt]; then
                 echo "detection=true" >> $GITHUB_OUTPUT
               else
                 echo "detection=false" >> $GITHUB_OUTPUT
