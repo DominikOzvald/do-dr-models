@@ -72,14 +72,15 @@ if __name__ == "__main__":
         exit(-1)
 
     model.eval()
-    step = 66
-    frame_size = 66
+    step = 15
+    frame_size = 15
     batch_size = 1
     dataset = DummyLogDataSet(step=step, frame_size=frame_size, pad_tag=6)
     dataset.add_from_file(f"{job_name}.txt")
     data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
 
     tag_names = ["Flaky test","Configuration drift","Security anomaly","Silent failure"]
+    anomalies_present = [False for _ in range(len(tag_names))]
 
     for i, (data, lengths, masks, tags) in enumerate(data_loader):
         with torch.no_grad():
@@ -90,6 +91,19 @@ if __name__ == "__main__":
             tags = tags.view(-1)
             prediction = prediction[tags != dataset.pad_tag]
             log_str = dataset.get_str_log_item(i)
-            for j in range(len(log_str)):
-                if prediction[j]>0:
-                    print(f"Anomaly detected: {tag_names[prediction[j]-1]}, Line: {log_str[j]}",end="")
+            if prediction.max().item()> 0:
+                for j in range(len(log_str)):
+                    if prediction[j]>0:
+                        anomalies_present[prediction[j]-1] = True
+                        print(f"{tag_names[prediction[j]-1]:<20}| {log_str[j]}",end="")
+                    else:
+                        print(f"{' '*20}| {log_str[j]}",end="")
+    if True in anomalies_present:
+        with open("body.html","w",encoding="utf-8") as body:
+            body.write(f"<h2>Log anomaly detection bot has found some anomalies in job: {job_name}</h2>")
+            anomalies_str = ''
+            for i in len(anomalies_present):
+                if anomalies_present[i]:
+                    anomalies_str += f"{tag_names},"
+            anomalies_str = anomalies_str[:-1]
+            body.write(f"<p>Found {anomalies_str} view attached file for details</p>")

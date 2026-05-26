@@ -41,5 +41,5 @@ runs:
               to: ${{ inputs.mail-address}}
               subject: "Anomaly detection alert"
               from: GitHub Log Bot <${{ inputs.mail-username }}>
-              html_body: file://${{ github.action_path }}/template.html
+              html_body: file://body.html
               attachments: anomaly.txt
