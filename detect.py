@@ -102,7 +102,7 @@ if __name__ == "__main__":
         with open("body.html","w",encoding="utf-8") as body:
             body.write(f"<h2>Log anomaly detection bot has found some anomalies in job: {job_name}</h2>")
             anomalies_str = ''
-            for i in len(anomalies_present):
+            for i in range(len(anomalies_present)):
                 if anomalies_present[i]:
                     anomalies_str += f"{tag_names},"
             anomalies_str = anomalies_str[:-1]
