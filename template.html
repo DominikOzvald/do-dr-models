@@ -1,0 +1,38 @@
+<html>
+	<style>
+		header h2 {
+			font-family: "Lucida Console";
+			margin: 1rem;
+		}
+		body p {
+			font-family: "Lucida Console";
+			margin: 1rem;
+		}
+		body div p {
+			font-family: "Courier New";
+			margin: 0 0 0 1rem;
+		}
+		.container {
+			display: grid;
+			grid-template-columns: 10rem auto;
+		}
+		.anomaly {
+			background: rgba(255, 187, 0, 0.555);
+			text-align: center;
+		}
+	</style>
+	<header>
+		<h2>Log anomaly detection bot has found some anomalies in job: Build and test</h2>
+	</header>
+	<body>
+		<p>Found Silent failures and Flaky tests listed below</p>
+		<div class="container">
+			<p></p>
+			<p>WARN Testing Method PUT terminated</p>
+			<p class="anomaly">Security anomaly</p>
+			<p>Silent failure ERROR with open('pom/test_value.json', 'r') as file:</p>
+			<p></p>
+			<p>ERROR test.py :67:14: fatal error occurred: pom/test_value.json no such file or directory</p>
+		</div>
+	</body>
+</html>
