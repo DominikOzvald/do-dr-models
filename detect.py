@@ -104,6 +104,6 @@ if __name__ == "__main__":
             anomalies_str = ''
             for i in range(len(anomalies_present)):
                 if anomalies_present[i]:
-                    anomalies_str += f"{tag_names},"
+                    anomalies_str += f"{tag_names[i]},"
             anomalies_str = anomalies_str[:-1]
             body.write(f"<p>Found {anomalies_str} view attached file for details</p>")
