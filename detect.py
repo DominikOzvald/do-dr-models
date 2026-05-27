@@ -72,8 +72,8 @@ if __name__ == "__main__":
         exit(-1)
 
     model.eval()
-    step = 15
-    frame_size = 15
+    step = 30
+    frame_size = 30
     batch_size = 1
     dataset = DummyLogDataSet(step=step, frame_size=frame_size, pad_tag=6)
     dataset.add_from_file(f"{job_name}.txt")
@@ -81,7 +81,7 @@ if __name__ == "__main__":
 
     tag_names = ["Flaky test","Configuration drift","Security anomaly","Silent failure"]
     anomalies_present = [False for _ in range(len(tag_names))]
-
+    last_anomaly_index = 0
     for i, (data, lengths, masks, tags) in enumerate(data_loader):
         with torch.no_grad():
             z = embedder(data, lengths)
@@ -92,6 +92,9 @@ if __name__ == "__main__":
             prediction = prediction[tags != dataset.pad_tag]
             log_str = dataset.get_str_log_item(i)
             if prediction.max().item()> 0:
+                if i-last_anomaly_index > 1:
+                    print(f"From line: {i*step:>5} {"="*20}")
+                last_anomaly_index = i
                 for j in range(len(log_str)):
                     if prediction[j]>0:
                         anomalies_present[prediction[j]-1] = True
