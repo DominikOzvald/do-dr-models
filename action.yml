@@ -28,9 +28,14 @@ runs:
           id: detector
           run: |
               python ${{ github.action_path }}/detect.py -j ${{inputs.job-name}} -p ${{ github.action_path }} > anomaly.txt
-              echo "detection=true" >> $GITHUB_OUTPUT
+              if [ -f body.html ]; then
+                echo "detection=true" >> $GITHUB_OUTPUT
+              else
+                echo "detection=false" >> $GITHUB_OUTPUT
+              fi
         - name: Send mail notification
           uses: dawidd6/action-send-mail@v3
+          if: steps.detector.outputs.detection == 'true'
           with:
               server_address: ${{inputs.server-address}}
               server_port: 465
