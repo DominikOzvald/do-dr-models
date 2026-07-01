@@ -217,6 +217,33 @@ class PosEncoder(torch.nn.Module):
     def forward(self, x: torch.Tensor):
         return x + self.pe[:, : x.size(1), :]
 
+class PredTransformer(torch.nn.Module):
+    def __init__(self, d_model: int = 512, n_head: int = 8, dec_layer: int = 6,
+                 enc_layer: int = 6, dim_forward=1024):
+        super().__init__()
+        self.d_model = d_model
+        self.n_head = n_head
+        self.dec_layer = dec_layer
+        self.enc_layer = enc_layer
+        self.dim_forward = dim_forward
+
+        self.pe = PosEncoder(d_model=d_model, max_len=300)
+        self.transformer = torch.nn.Transformer(d_model=d_model, batch_first=True, nhead=n_head,
+                                                num_decoder_layers=dec_layer, num_encoder_layers=enc_layer,
+                                                dim_feedforward=dim_forward)
+
+    def forward(self, z: torch.Tensor, tgt_z: torch.Tensor, masks: torch.Tensor):
+        src = z * math.sqrt(self.d_model)
+        src = self.pe(src)
+        tgt = tgt_z * math.sqrt(self.d_model)
+        tgt = self.pe(tgt)
+        tgt_mask = torch.nn.Transformer.generate_square_subsequent_mask(tgt.size(1),
+                                                                        device=tgt.device)
+        tgt_padding_masks = torch.cat([torch.zeros(masks.size(0), 1, device=masks.device), masks[:, :-1]], dim=1)
+        out = self.transformer(src=src, tgt=tgt, tgt_mask=tgt_mask, tgt_key_padding_mask=tgt_padding_masks,
+                               src_key_padding_mask=masks)
+
+        return out
 
 class TaggedTransformer(torch.nn.Module):
     def __init__(

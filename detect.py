@@ -1,9 +1,10 @@
 import argparse
 import os
 from data import CharVocab, DummyLogDataSet
-from models import ConvEmbedder, TaggedTransformer
+from models import ConvEmbedder, TaggedTransformer, PredTransformer
 import torch
 from torch.utils.data import DataLoader
+import torch.nn.functional as F
 
 if __name__ == "__main__":
 
@@ -70,7 +71,18 @@ if __name__ == "__main__":
         print("Can not load Transformer", transformer_name)
         print(e)
         exit(-1)
+    threshold = 2
+    pred_name = "PredTransformer-DE-2-H-2-F-1024.pt"
+    pred_model = PredTransformer(d_model=d_model,n_head=n_head,dec_layer=enc_layer,enc_layer=enc_layer)
 
+    try:
+        pred_model.load_state_dict(
+            torch.load(os.path.join(action_path,pred_name),weights_only=True,map_location=torch.device(device))
+        )
+    except Exception as e:
+        print("Can not load Transformer", pred_name)
+        print(e)
+        exit(-1)
     model.eval()
     step = 30
     frame_size = 30
@@ -85,13 +97,22 @@ if __name__ == "__main__":
     for i, (data, lengths, masks, tags) in enumerate(data_loader):
         with torch.no_grad():
             z = embedder(data, lengths)
+            sos = torch.zeros(z.size(0), 1, z.size(2))
+            tgt = torch.cat([sos, z[:, :-1, :]], dim=1)
+            
+            recon = pred_model(z,tgt,masks)
+            recon = F.mse_loss(recon, z, reduction="none")
+            recon = torch.mean(recon,dim=-1).view(-1)
+
             out = model(z, masks)
             prediction = torch.argmax(torch.softmax(out, dim=-1), dim=-1)
             prediction = prediction.view(-1)
             tags = tags.view(-1)
             prediction = prediction[tags != dataset.pad_tag]
+            recon = recon[tags != dataset.pad_tag]
+
             log_str = dataset.get_str_log_item(i)
-            if prediction.max().item()> 0:
+            if prediction.max().item()> 0 or recon.max().item()> threshold:
                 if i-last_anomaly_index > 1:
                     print(f"From line: {i*step:>5} {"="*20}")
                 last_anomaly_index = i
@@ -99,6 +120,8 @@ if __name__ == "__main__":
                     if prediction[j]>0:
                         anomalies_present[prediction[j]-1] = True
                         print(f"{tag_names[prediction[j]-1]:<20}| {log_str[j]}",end="")
+                    elif recon[j]>threshold:
+                        print(f"{'Unknown anomaly':<20}| {log_str[j]}",end="")
                     else:
                         print(f"{' '*20}| {log_str[j]}",end="")
     if True in anomalies_present:
