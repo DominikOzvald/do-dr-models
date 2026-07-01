@@ -71,7 +71,7 @@ if __name__ == "__main__":
         print("Can not load Transformer", transformer_name)
         print(e)
         exit(-1)
-    threshold = 2
+    threshold = 0.1
     pred_name = "PredTransformer-DE-2-H-2-F-1024.pt"
     pred_model = PredTransformer(d_model=d_model,n_head=n_head,dec_layer=enc_layer,enc_layer=enc_layer)
 
