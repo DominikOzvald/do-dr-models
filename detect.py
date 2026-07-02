@@ -71,7 +71,7 @@ if __name__ == "__main__":
         print("Can not load Transformer", transformer_name)
         print(e)
         exit(-1)
-    threshold = 2
+    threshold = 0.1
     pred_name = "PredTransformer-DE-2-H-2-F-1024.pt"
     pred_model = PredTransformer(d_model=d_model,n_head=n_head,dec_layer=enc_layer,enc_layer=enc_layer)
 
@@ -91,7 +91,7 @@ if __name__ == "__main__":
     dataset.add_from_file(f"{job_name}.txt")
     data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
 
-    tag_names = ["Flaky test","Configuration drift","Security anomaly","Silent failure"]
+    tag_names = ["Flaky test","Configuration drift","Security anomaly","Silent failure","Unknown anomaly"]
     anomalies_present = [False for _ in range(len(tag_names))]
     last_anomaly_index = 0
     for i, (data, lengths, masks, tags) in enumerate(data_loader):
@@ -113,7 +113,7 @@ if __name__ == "__main__":
 
             log_str = dataset.get_str_log_item(i)
             if prediction.max().item()> 0 or recon.max().item()> threshold:
-                if i-last_anomaly_index > 1 or i == 0:
+                if i-last_anomaly_index > 1 or last_anomaly_index == 0:
                     print(f"From line: {i*step:>5} {"="*20}")
                 last_anomaly_index = i
                 for j in range(len(log_str)):
@@ -121,6 +121,7 @@ if __name__ == "__main__":
                         anomalies_present[prediction[j]-1] = True
                         print(f"{tag_names[prediction[j]-1]:<20}| {log_str[j]}",end="")
                     elif recon[j]>threshold:
+                        anomalies_present[-1] = True
                         print(f"{'Unknown anomaly':<20}| {log_str[j]}",end="")
                     else:
                         print(f"{' '*20}| {log_str[j]}",end="")
